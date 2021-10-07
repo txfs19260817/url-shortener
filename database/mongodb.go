@@ -21,8 +21,8 @@ type MongoDB struct {
 
 // MongoDBConfig loads configs to set up MongoDB instance
 type MongoDBConfig struct {
-	Uri      string `yaml:"uri"`
-	Database string `yaml:"database"`
+	Uri        string `yaml:"uri"`
+	Database   string `yaml:"database"`
 	Collection string `yaml:"collection"`
 	Timeout    int    `yaml:"timeout"`
 }
@@ -73,4 +73,14 @@ func (m *MongoDB) ReadUrl(key string) (url *model.Url, err error) {
 
 	err = m.DB.Collection(m.Collection).FindOne(ctx, bson.M{"key": key}).Decode(&url)
 	return
+}
+
+// KeyExists checks if the given key is already in use
+func (m *MongoDB) KeyExists(key string) bool {
+	r, err := m.ReadUrl(key)
+	if err == mongo.ErrNoDocuments {
+		err = nil
+	}
+	// whether r is nil or not decides the result, however if there is an unexpected type of error, we should return false
+	return err == nil && r != nil
 }

@@ -7,6 +7,7 @@ var DB Database
 // Database is an interface contains a set of CRUD methods to be implemented.
 // Thus, we can call these methods in a database agnostic manner.
 type Database interface {
-	CreateUrl(*model.Url) error
-	ReadUrl(string) (*model.Url, error)
+	CreateUrl(url *model.Url) error
+	ReadUrl(key string) (*model.Url, error)
+	KeyExists(key string) bool
 }

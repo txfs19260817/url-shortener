@@ -11,8 +11,14 @@ import (
 )
 
 type Config struct {
+	Server  Server                 `yaml:"server"`
 	Mongodb database.MongoDBConfig `yaml:"mongodb"`
 	Service service.ServicesConfig `yaml:"service"`
+}
+
+type Server struct {
+	Host string `yaml:"host"`
+	Port int    `yaml:"port"`
 }
 
 func (cfg *Config) ReadConfig(fullpath string) error {
