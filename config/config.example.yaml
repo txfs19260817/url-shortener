@@ -1,0 +1,9 @@
+mongodb:
+  uri: "mongodb://localhost:27017/?readPreference=primary&ssl=false"
+  database: dbname
+  collection: urls
+  timeout: 3 # second
+service:
+  hash_len: 6
+  pool_size: 16
+  duration: 1 # second

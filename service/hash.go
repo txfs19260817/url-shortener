@@ -6,6 +6,16 @@ import (
 	gonanoid "github.com/matoous/go-nanoid/v2"
 )
 
+var HashProvider *HashGenerator
+
+// ServicesConfig contains configuration for service package
+type ServicesConfig struct {
+	// HashGenerator configs
+	HashLen  int `yaml:"hash_len"`
+	PoolSize int `yaml:"pool_size"`
+	Duration int `yaml:"duration"`
+}
+
 // HashGenerator provides methods to generate Hash/ID for short urls
 type HashGenerator struct {
 	Len      int    // Len represents the expected length of the hash
@@ -56,4 +66,9 @@ func (h *HashGenerator) NanoIDProvider() (err error) {
 		time.Sleep(h.Duration)
 	}
 	return err
+}
+
+// CloseProvider send signal to HashGenerator.Done to finish the provider task
+func (h *HashGenerator) CloseProvider() {
+	h.Done <- struct{}{}
 }

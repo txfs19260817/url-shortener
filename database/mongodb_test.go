@@ -7,7 +7,8 @@ import (
 )
 
 func TestNewMongoDB(t *testing.T) {
-	db, err := NewMongoDB("", "", "", 0)
+	var c MongoDBConfig
+	db, err := NewMongoDB(c)
 	assert.Nil(t, db)
 	assert.Error(t, err)
 }

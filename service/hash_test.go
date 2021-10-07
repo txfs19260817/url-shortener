@@ -27,7 +27,7 @@ func TestHashGenerator_NanoIDProvider(t *testing.T) {
 		assert.NoError(tt, err)
 	}()
 	time.Sleep(5 * duration)
-	h.Done <- struct{}{}
+	h.CloseProvider()
 	for i := 0; i < amount; i++ {
 		nanoID, ok := <-h.Queue
 		assert.True(t, ok)

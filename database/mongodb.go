@@ -11,22 +11,31 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/readpref"
 )
 
+// MongoDB is the database client instance
 type MongoDB struct {
-	client     *mongo.Client
-	database   *mongo.Database
-	collection string
-	timeout    time.Duration
+	Client          *mongo.Client
+	DB              *mongo.Database
+	TimeoutDuration time.Duration
+	MongoDBConfig
 }
 
-func NewMongoDB(mongoURI, database, collection string, timeoutSec int) (Database, error) {
+// MongoDBConfig loads configs to set up MongoDB instance
+type MongoDBConfig struct {
+	Uri      string `yaml:"uri"`
+	Database string `yaml:"database"`
+	Collection string `yaml:"collection"`
+	Timeout    int    `yaml:"timeout"`
+}
+
+func NewMongoDB(config MongoDBConfig) (Database, error) {
 	// Configure our client to use the correct URI, but we're not yet connecting to it.
-	client, err := mongo.NewClient(options.Client().ApplyURI(mongoURI))
+	client, err := mongo.NewClient(options.Client().ApplyURI(config.Uri))
 	if err != nil {
 		return nil, err
 	}
 
 	// Define a timeout duration
-	timeout := time.Duration(timeoutSec) * time.Second
+	timeout := time.Duration(config.Timeout) * time.Second
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
 
@@ -41,7 +50,7 @@ func NewMongoDB(mongoURI, database, collection string, timeoutSec int) (Database
 	if err := client.Ping(ctx, readpref.Primary()); err != nil {
 		return nil, err
 	}
-	return &MongoDB{client, client.Database(database), collection, timeout}, nil
+	return &MongoDB{Client: client, DB: client.Database(config.Database), TimeoutDuration: time.Duration(config.Timeout) * time.Second, MongoDBConfig: config}, nil
 }
 
 func (m *MongoDB) CreateUrl(url *model.Url) error {
@@ -49,19 +58,19 @@ func (m *MongoDB) CreateUrl(url *model.Url) error {
 	if err != nil {
 		return err
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), m.timeout)
+	ctx, cancel := context.WithTimeout(context.Background(), m.TimeoutDuration)
 	defer cancel()
 
-	if _, err := m.database.Collection(m.collection).InsertOne(ctx, doc); err != nil {
+	if _, err := m.DB.Collection(m.Collection).InsertOne(ctx, doc); err != nil {
 		return err
 	}
 	return nil
 }
 
 func (m *MongoDB) ReadUrl(key string) (url *model.Url, err error) {
-	ctx, cancel := context.WithTimeout(context.Background(), m.timeout)
+	ctx, cancel := context.WithTimeout(context.Background(), m.TimeoutDuration)
 	defer cancel()
 
-	err = m.database.Collection(m.collection).FindOne(ctx, bson.M{"key": key}).Decode(&url)
+	err = m.DB.Collection(m.Collection).FindOne(ctx, bson.M{"key": key}).Decode(&url)
 	return
 }
